@@ -57,19 +57,36 @@ async function poll() {
     lastMod = r.mtime;
     const cuts = r.cuts;
 
+    const barBase = 3.0; // 막대 기준 = 3초 목표
+    // 진짜 컷(≤10초)과 미편집 덩어리(>10초) 분리
+    const real = [];
+    let rawSum = 0;
+    cuts.forEach((c, i) => {
+      if (c.dur > 10) rawSum += c.dur;
+      else real.push({ c, i });
+    });
     const total = cuts.reduce((s, c) => s + c.dur, 0);
-    // 막대 기준 = 3초 목표. 3초면 꽉 참, 더 길면 꽉 채운 채 유지
-    const barBase = 3.0;
-    $("stCuts").textContent = cuts.length;
+    const realTotal = real.reduce((s, x) => s + x.c.dur, 0);
+    $("stCuts").textContent = real.length;
     $("stTotal").textContent = fmt(total);
-    $("stAvg").textContent = cuts.length
-      ? (total / cuts.length).toFixed(2) + "초"
+    $("stAvg").textContent = real.length
+      ? (realTotal / real.length).toFixed(2) + "초"
       : "-";
+
+    // 미편집 덩어리 → 하단 배너로
+    if (rawSum > 0) {
+      $("rawBanner").style.display = "flex";
+      $("rawAmount").textContent = fmt(rawSum);
+    } else {
+      $("rawBanner").style.display = "none";
+    }
 
     const tbody = $("rows");
     tbody.innerHTML = "";
     let firstChanged = null;
-    cuts.forEach((c, i) => {
+    // 역순 렌더 — 최신(마지막) 컷이 맨 위로
+    for (let k = real.length - 1; k >= 0; k--) {
+      const { c, i } = real[k];
       const tr = document.createElement("tr");
       const changed =
         lastDur.length && Math.abs((lastDur[i] ?? -1) - c.dur) > 0.001;
@@ -78,30 +95,18 @@ async function poll() {
         if (firstChanged === null) firstChanged = tr;
       }
       const thumbId = `th${i}`;
-      const raw = c.dur > 10; // 10초 초과 = 아직 안 자른 덩어리
-      if (raw) tr.classList.add("raw");
       const w = Math.min(100, Math.round((c.dur / barBase) * 100));
-      if (raw) {
-        tr.innerHTML =
-          `<td class="n">${i + 1}</td>` +
-          `<td class="thumb"><img id="${thumbId}" alt=""></td>` +
-          `<td class="len">` +
-          `<span class="lentext">${fmt(c.dur)}</span>` +
-          `<span class="rawtag">✂ 아직 안 자른 부분</span>` +
-          `</td>`;
-      } else {
-        tr.innerHTML =
-          `<td class="n">${i + 1}</td>` +
-          `<td class="thumb"><img id="${thumbId}" alt=""></td>` +
-          `<td class="len ${lenClass(c.dur)}">` +
-          `<span class="bar" style="width:${w}%"></span>` +
-          `<span class="lentext">${c.dur.toFixed(2)}초</span>` +
-          `<span class="starttext">${fmt(c.start)}</span>` +
-          `</td>`;
-      }
+      tr.innerHTML =
+        `<td class="n">${i + 1}</td>` +
+        `<td class="thumb"><img id="${thumbId}" alt=""></td>` +
+        `<td class="len ${lenClass(c.dur)}">` +
+        `<span class="bar" style="width:${w}%"></span>` +
+        `<span class="lentext">${c.dur.toFixed(2)}초</span>` +
+        `<span class="starttext">${fmt(c.start)}</span>` +
+        `</td>`;
       tbody.appendChild(tr);
       loadThumb(thumbId, c.video, c.src);
-    });
+    }
     if (firstChanged)
       firstChanged.scrollIntoView({ block: "center", behavior: "smooth" });
     lastDur = cuts.map((c) => c.dur);

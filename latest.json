@@ -1,11 +1,11 @@
 {
- "version": "0.2.0",
- "notes": "컷체크 정식 배포 — 컷별 길이 신호등, 썸네일, 닉네임 인증",
- "pub_date": "2026-07-25T00:00:00Z",
+ "version": "0.2.1",
+ "notes": "최신 컷이 맨 위로(역순) + 미편집 부분 배너 + 평균 컷 정확도 개선",
+ "pub_date": "2026-07-25T01:00:00Z",
  "platforms": {
   "windows-x86_64": {
-   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3RtdncvTHZrWGtNWDFyaWtqbVhieEQ0bGc5UkdoL09qTzJuaktuWWp2STNXcEwvcnpadmJRZFFadHNzZEtyWWtLRTMrT2JmY05DbW1DYUswTEZIOGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTI0NTQyCWZpbGU6Q3V0Q2hlY2tfMC4yLjBfeDY0LXNldHVwLmV4ZQpSVFlmRGMwdlBIaGVyV2sxSlA3YXJSVFpVR2ZWSHc3dDNQZ1Zuamx2WDJKYUdzQnd5dlNtWWhGdU9EY1Y0MTM1R3cwWTU0cGZRR25rbTRZQ0NYZG9EZz09Cg==",
-   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.2.0/CutCheck_0.2.0_x64-setup.exe"
+   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3BpMmhDNU4zb1lxaytMSVJPU1JYQjJFUHh1eFlzazVPNy8xc3dQZUZTckd3WkNGOGtlUHJERERoMERYR280d3NMN2ljbnFVRTM0U3Fxdm1Tem84d3dVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTI1NjM0CWZpbGU6Q3V0Q2hlY2tfMC4yLjFfeDY0LXNldHVwLmV4ZQpDckxnQ21mazFyODRWdXBmTzJ2SlBHaHI2WnZ4MSs4RDdnMUVtcE1xeFlLNWFNRTJBNTU5U1VJUUNhN0lZT29nTGlGRjM1TVh6WHcwNFoxLzhWYkpBdz09Cg==",
+   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.2.1/CutCheck_0.2.1_x64-setup.exe"
   }
  }
 }

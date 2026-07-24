@@ -158,6 +158,20 @@ tr.flash td { animation: flash 1.6s ease-out; }
   100% { background: transparent; }
 }
 
+.rawBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding: 8px 11px;
+  background: #f3f3f5;
+  border: 1px dashed #cfcfd4;
+  border-radius: 9px;
+  font-size: 11px;
+  color: #8a8a90;
+}
+.rawBanner .rawAmount { font-weight: 700; font-size: 13px; color: #6a6a70; }
+
 .legend {
   display: flex;
   justify-content: center;
