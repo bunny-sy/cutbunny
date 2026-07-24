@@ -1,0 +1,5 @@
+node_modules/
+src-tauri/target/
+updater-key.txt
+updater-key.txt.pub
+icon_src.png

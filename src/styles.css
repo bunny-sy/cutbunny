@@ -1,0 +1,89 @@
+:root {
+  --bg: #221219;
+  --card: #33202b;
+  --pink: #f58fb4;
+  --pink-dk: #dd7aa0;
+  --text: #fce9f1;
+  --muted: #c99caf;
+  --border: #5c3a4b;
+  --ink: #3b0f22;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Malgun Gothic", sans-serif;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+header { text-align: center; margin-bottom: 8px; }
+h1 { color: var(--pink); font-size: 19px; }
+.sub { color: var(--muted); font-size: 10px; margin-top: 2px;
+       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+select {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  width: 100%;
+  margin-bottom: 8px;
+  outline: none;
+}
+
+.stats { display: flex; gap: 6px; margin-bottom: 8px; }
+.stat {
+  flex: 1;
+  background: var(--card);
+  border-radius: 9px;
+  padding: 6px;
+  text-align: center;
+}
+.stat b { display: block; color: var(--pink); font-size: 15px; }
+.stat span { color: var(--muted); font-size: 10px; }
+
+#listWrap {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+#listWrap::-webkit-scrollbar { width: 6px; }
+#listWrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th {
+  color: var(--muted); font-weight: normal; font-size: 10px;
+  text-align: left; padding: 5px 4px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--card);
+}
+th.r, td.len { text-align: right; }
+td { padding: 5px 4px; border-bottom: 1px solid rgba(92, 58, 75, 0.35); }
+td.n { color: var(--muted); width: 34px; }
+td.len { color: var(--pink); font-weight: bold; width: 74px; }
+
+tr.flash td { animation: flash 1.6s ease-out; }
+@keyframes flash {
+  0% { background: rgba(245, 143, 180, 0.45); }
+  100% { background: transparent; }
+}
+
+footer {
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+  padding-top: 6px;
+  min-height: 20px;
+}
