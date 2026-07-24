@@ -4,32 +4,50 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>컷길이버니</title>
+    <title>컷체크</title>
     <script type="module" src="main.js" defer></script>
   </head>
   <body>
-    <header>
-      <h1>🐰 컷길이버니</h1>
-      <div class="sub" id="rootInfo">캡컷 폴더 찾는 중...</div>
-    </header>
-
-    <select id="projSel"></select>
-
-    <div class="stats">
-      <div class="stat"><b id="stCuts">-</b><span>컷 수</span></div>
-      <div class="stat"><b id="stTotal">-</b><span>총 길이</span></div>
-      <div class="stat"><b id="stAvg">-</b><span>평균 컷</span></div>
+    <div id="gate" class="gate" style="display:none">
+      <div class="gateBox">
+        <div class="gateTitle">✂ 컷체크</div>
+        <div class="gateSub">디하클 닉네임을 입력하세요<br>(등록된 수강생만 사용할 수 있어요)</div>
+        <input id="nickInput" type="text" placeholder="닉네임" autocomplete="off" />
+        <button id="nickBtn">시작하기</button>
+        <div id="gateMsg" class="gateMsg"></div>
+      </div>
     </div>
 
-    <div id="listWrap">
-      <table>
-        <thead>
-          <tr><th>컷</th><th>시작</th><th class="r">길이</th></tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
+    <div id="app" style="display:none">
+      <header>
+        <h1>✂ 컷체크</h1>
+        <div id="cheer" class="cheer"></div>
+      </header>
 
-    <footer><span id="status">준비 중...</span><span id="ver" class="ver"></span></footer>
+      <select id="projSel"></select>
+
+      <div class="stats">
+        <div class="stat"><b id="stCuts">-</b><span>컷 수</span></div>
+        <div class="stat"><b id="stTotal">-</b><span>총 길이</span></div>
+        <div class="stat"><b id="stAvg">-</b><span>평균 컷</span></div>
+      </div>
+
+      <div id="listWrap">
+        <table>
+          <thead>
+            <tr><th>컷</th><th>장면</th><th class="r">길이 · 시작</th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <div class="legend">
+        <span><i style="background:#22a06b"></i>~3초</span>
+        <span><i style="background:#e0a400"></i>3~4초</span>
+        <span><i style="background:#e24b4a"></i>4초↑</span>
+        <span><i style="background:#b0b0b6"></i>미편집</span>
+      </div>
+      <footer><span id="status">준비 중...</span><span id="ver" class="ver"></span></footer>
+    </div>
   </body>
 </html>

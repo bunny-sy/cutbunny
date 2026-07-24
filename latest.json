@@ -1,11 +1,11 @@
 {
- "version": "0.1.3",
- "notes": "상태 문구: 버니가 과제 감시중 👀",
- "pub_date": "2026-07-24T16:58:35Z",
+ "version": "0.2.0",
+ "notes": "컷체크 정식 배포 — 컷별 길이 신호등, 썸네일, 닉네임 인증",
+ "pub_date": "2026-07-25T00:00:00Z",
  "platforms": {
   "windows-x86_64": {
-   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3AwSGUxVUdZbTR3Ykk4ZVNRRkFSbHNCOEpPMEFrbXFCbzUyRnVnZjllZ2J5T3c2OGNORU1DYTlIWFd6Ky8zWHZBbkwzYkN6MzgzaXhxS3V3UC8wcWdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTEyMzE1CWZpbGU6Y3V0YnVubnlfMC4xLjNfeDY0LXNldHVwLmV4ZQpIYnppRU12bzVkazY4TkdoKytsM3I4eWorYXJzT0pCcVNTRlRnOElTazBzRGpNZ3BESWd2dHlVaUVmMzBZNTBNN2RDTTVBcWQ2SjRrUUIxU0RlYWNBdz09Cg==",
-   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.1.3/cutbunny_0.1.3_x64-setup.exe"
+   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3RtdncvTHZrWGtNWDFyaWtqbVhieEQ0bGc5UkdoL09qTzJuaktuWWp2STNXcEwvcnpadmJRZFFadHNzZEtyWWtLRTMrT2JmY05DbW1DYUswTEZIOGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTI0NTQyCWZpbGU6Q3V0Q2hlY2tfMC4yLjBfeDY0LXNldHVwLmV4ZQpSVFlmRGMwdlBIaGVyV2sxSlA3YXJSVFpVR2ZWSHc3dDNQZ1Zuamx2WDJKYUdzQnd5dlNtWWhGdU9EY1Y0MTM1R3cwWTU0cGZRR25rbTRZQ0NYZG9EZz09Cg==",
+   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.2.0/CutCheck_0.2.0_x64-setup.exe"
   }
  }
 }
