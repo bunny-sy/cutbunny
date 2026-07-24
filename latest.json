@@ -1,11 +1,11 @@
 {
- "version": "0.1.1",
- "notes": "자동 업데이트 검증 + 헤더에 버전 표시",
- "pub_date": "2026-07-24T16:27:30Z",
+ "version": "0.1.2",
+ "notes": "버전 표시를 하단 구석으로 이동",
+ "pub_date": "2026-07-24T16:34:03Z",
  "platforms": {
   "windows-x86_64": {
-   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM2dIZ1hFVHdoZ0lscmk1NGkyMmdmZVU3QmVUcHhFakhVRkRub0lQV08vaGZFcGtIbmQ4NDZoWE1tTEFCNEVHVFB4TjU5ZDZsMk9VYVhzOVFKQzUyZ1FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTEwNDUwCWZpbGU6Y3V0YnVubnlfMC4xLjFfeDY0LXNldHVwLmV4ZQpDN21EUGpiNzBXK0R5S1pnbWlIYWpVMHgzN0NwUGhnWFpoY3hldGoxeU5lMThxWERPWFdYSEk0RXoxcmg0WmRaOFZxL1EyUEpuWXF2K3JraGtpa0lBdz09Cg==",
-   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.1.1/cutbunny_0.1.1_x64-setup.exe"
+   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3JMcm5YbVlJbW4wSko2U3JwTkJ4d1EySzBPTW5jNUw3OHdtSEowOENsZnpsUXdUUHljNURrL000MmZpZnV6RjJjTmNjWXQxZzcyUGF3RXZibVZuV2c4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTEwODQzCWZpbGU6Y3V0YnVubnlfMC4xLjJfeDY0LXNldHVwLmV4ZQpLbCtnRmprYmVWQ091N3RyZ1lSQTlqWUNWOXZSS1U3RkhzY2FVeFh4WnV1bXNTOVJZc0VKd2hMYkJFS0tFRkNYRFZTajhBY3c2dzJrN0FOMWpLTkhBZz09Cg==",
+   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.1.2/cutbunny_0.1.2_x64-setup.exe"
   }
  }
 }

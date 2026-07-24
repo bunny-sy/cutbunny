@@ -83,7 +83,10 @@ tr.flash td { animation: flash 1.6s ease-out; }
 footer {
   color: var(--muted);
   font-size: 10px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding-top: 6px;
   min-height: 20px;
 }
+.ver { opacity: 0.55; font-size: 9px; }
