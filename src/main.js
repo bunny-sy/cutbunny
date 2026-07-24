@@ -69,6 +69,8 @@ async function poll() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  const ver = await window.__TAURI__.app.getVersion();
+  document.querySelector("h1").textContent = "🐰 컷길이버니 v" + ver;
   const root = await invoke("get_root");
   $("rootInfo").textContent = root || "⚠ 캡컷 폴더를 못 찾았어요 — 캡컷 설치 확인!";
 
