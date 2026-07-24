@@ -62,7 +62,7 @@ async function poll() {
       firstChanged.scrollIntoView({ block: "center", behavior: "smooth" });
     lastDur = cuts.map((c) => c.dur);
     $("status").textContent =
-      "감시 중 🐰 " + new Date().toLocaleTimeString();
+      "버니가 과제 감시중 👀 " + new Date().toLocaleTimeString();
   } catch (e) {
     $("status").textContent = "읽는 중... (" + e + ")";
   }
