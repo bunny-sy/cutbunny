@@ -9,19 +9,47 @@ function lenClass(dur) {
   return "good";
 }
 
-const thumbCache = new Map();
-async function loadThumb(imgId, video, src) {
+// 썸네일: 길이 표시를 절대 막지 않도록 백그라운드에서 동시 3개까지만 처리
+const thumbCache = new Map(); // key -> data URI (성공)
+const thumbTried = new Set(); // 요청했던 key (재요청 방지)
+const thumbQueue = [];
+let thumbActive = 0;
+const THUMB_MAX = 3;
+
+function pumpThumbs() {
+  while (thumbActive < THUMB_MAX && thumbQueue.length) {
+    const job = thumbQueue.shift();
+    thumbActive++;
+    job().finally(() => {
+      thumbActive--;
+      pumpThumbs();
+    });
+  }
+}
+
+function loadThumb(imgId, video, src) {
   if (!video) return;
   const key = video + "|" + src.toFixed(2);
-  try {
-    let uri = thumbCache.get(key);
-    if (!uri) {
-      uri = await invoke("thumbnail", { video, srcSec: src });
-      thumbCache.set(key, uri);
-    }
+  // 이미 성공 캐시면 즉시 표시
+  const cached = thumbCache.get(key);
+  if (cached) {
     const img = document.getElementById(imgId);
-    if (img) img.src = uri;
-  } catch (_) {}
+    if (img) img.src = cached;
+    return;
+  }
+  if (thumbTried.has(key)) return; // 이미 시도함 — 성공 시 다음 렌더에서 채워짐
+  thumbTried.add(key);
+  thumbQueue.push(async () => {
+    try {
+      const uri = await invoke("thumbnail", { video, srcSec: src });
+      thumbCache.set(key, uri);
+      const img = document.getElementById(imgId);
+      if (img) img.src = uri;
+    } catch (_) {
+      thumbTried.delete(key); // 실패는 다음에 재시도 허용
+    }
+  });
+  pumpThumbs();
 }
 
 let curProject = null;

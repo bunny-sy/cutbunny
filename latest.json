@@ -1,11 +1,11 @@
 {
- "version": "0.2.1",
- "notes": "최신 컷이 맨 위로(역순) + 미편집 부분 배너 + 평균 컷 정확도 개선",
- "pub_date": "2026-07-25T01:00:00Z",
+ "version": "0.2.2",
+ "notes": "속도 개선 — 썸네일이 컷 길이 표시를 막지 않도록 백그라운드 처리",
+ "pub_date": "2026-07-25T11:00:00Z",
  "platforms": {
   "windows-x86_64": {
-   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3BpMmhDNU4zb1lxaytMSVJPU1JYQjJFUHh1eFlzazVPNy8xc3dQZUZTckd3WkNGOGtlUHJERERoMERYR280d3NMN2ljbnFVRTM0U3Fxdm1Tem84d3dVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTI1NjM0CWZpbGU6Q3V0Q2hlY2tfMC4yLjFfeDY0LXNldHVwLmV4ZQpDckxnQ21mazFyODRWdXBmTzJ2SlBHaHI2WnZ4MSs4RDdnMUVtcE1xeFlLNWFNRTJBNTU5U1VJUUNhN0lZT29nTGlGRjM1TVh6WHcwNFoxLzhWYkpBdz09Cg==",
-   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.2.1/CutCheck_0.2.1_x64-setup.exe"
+   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM2dOSkx5L0kvREo2cU84WHV6RUE3MUtNUCtFcDNaYk11RFVvOTJ6aXJHMGg5K0R3SWlkTld1eGtVNGhLOW1aWnRMeHoxemlXM09hdHppaTVUWTUrcncwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTc3NDA2CWZpbGU6Q3V0Q2hlY2tfMC4yLjJfeDY0LXNldHVwLmV4ZQp0dzJ1M3NpTUJyK2lnNE40Zmp4SWttaCs2QS9oV0VVNjhZTEVhRm04YjNpSjFtNFgrN3lDTHFKMk5VeU0vZDVORzUzbmR4THFMblhVRzV6NnExTklEdz09Cg==",
+   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.2.2/CutCheck_0.2.2_x64-setup.exe"
   }
  }
 }

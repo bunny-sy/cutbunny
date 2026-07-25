@@ -152,11 +152,18 @@ fn regex_lite(folder: &str) -> impl Fn(&str) -> String + '_ {
     }
 }
 
-/// 컷 썸네일 생성 (번들된 ffmpeg로 원본 영상에서 프레임 추출) → 캐시 경로 반환
+/// 컷 썸네일 생성 (비동기 커맨드) — ffmpeg를 블로킹 스레드풀로 돌려
+/// 길이 조회(read_cuts) 등 다른 커맨드를 절대 막지 않게 함
 #[tauri::command]
-fn thumbnail(app: tauri::AppHandle, video: String, src_sec: f64) -> Result<String, String> {
+async fn thumbnail(app: tauri::AppHandle, video: String, src_sec: f64) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || make_thumb(&app, &video, src_sec))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn make_thumb(app: &tauri::AppHandle, video: &str, src_sec: f64) -> Result<String, String> {
     use std::process::Command;
-    if video.is_empty() || !std::path::Path::new(&video).exists() {
+    if video.is_empty() || !std::path::Path::new(video).exists() {
         return Err("영상 없음".into());
     }
     let cache = std::env::var_os("LOCALAPPDATA")
@@ -172,7 +179,7 @@ fn thumbnail(app: tauri::AppHandle, video: String, src_sec: f64) -> Result<Strin
         let b = base64::engine::general_purpose::STANDARD.encode(&bytes);
         return Ok(format!("data:image/jpeg;base64,{}", b));
     }
-    let ff = ffmpeg_path(&app)?;
+    let ff = ffmpeg_path(app)?;
     let status = Command::new(&ff)
         .args([
             "-y",
@@ -181,7 +188,7 @@ fn thumbnail(app: tauri::AppHandle, video: String, src_sec: f64) -> Result<Strin
             "-ss",
             &format!("{:.2}", src_sec),
             "-i",
-            &video,
+            video,
             "-frames:v",
             "1",
             "-vf",
