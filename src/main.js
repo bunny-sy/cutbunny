@@ -14,7 +14,7 @@ const thumbCache = new Map(); // key -> data URI (성공)
 const thumbTried = new Set(); // 요청했던 key (재요청 방지)
 const thumbQueue = [];
 let thumbActive = 0;
-const THUMB_MAX = 3;
+const THUMB_MAX = 5;
 
 function pumpThumbs() {
   while (thumbActive < THUMB_MAX && thumbQueue.length) {
