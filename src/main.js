@@ -2,10 +2,24 @@ const { invoke } = window.__TAURI__.core;
 
 const $ = (id) => document.getElementById(id);
 
-// 길이별 신호등 색: ~3초 초록 / 3~4초 노랑 / 4초↑ 빨강
+// 색 기준(사용자 설정, localStorage 저장). green=목표(초록상한), yellow=노랑상한, gray=잔컷상한
+const DEFAULT_TH = { gray: 1.2, green: 3.0, yellow: 4.0 };
+let TH = loadTH();
+function loadTH() {
+  try {
+    const s = JSON.parse(localStorage.getItem("cutcheck_th"));
+    if (s && s.green > 0) return { gray: +s.gray || 0, green: +s.green, yellow: +s.yellow };
+  } catch (_) {}
+  return { ...DEFAULT_TH };
+}
+function saveTH() {
+  localStorage.setItem("cutcheck_th", JSON.stringify(TH));
+}
+// 길이별 신호등 색: 잔컷(회색) / 초록 / 노랑 / 빨강
 function lenClass(dur) {
-  if (dur > 4) return "over";
-  if (dur > 3) return "warn";
+  if (dur < TH.gray) return "tiny";
+  if (dur > TH.yellow) return "over";
+  if (dur > TH.green) return "warn";
   return "good";
 }
 
@@ -85,7 +99,7 @@ async function poll() {
     lastMod = r.mtime;
     const cuts = r.cuts;
 
-    const barBase = 3.0; // 막대 기준 = 3초 목표
+    const barBase = TH.green || 3.0; // 막대 기준 = 목표 길이
     // 진짜 컷(≤10초)과 미편집 덩어리(>10초) 분리
     const real = [];
     let rawSum = 0;
@@ -211,10 +225,78 @@ async function startApp(nick) {
     poll();
   });
 
+  setupSettings();
+  renderLegend();
+
   await refreshProjects();
   await poll();
   setInterval(refreshProjects, 3000);
   setInterval(poll, 1000);
+}
+
+function fmtSec(v) {
+  return (Math.round(v * 10) / 10).toString().replace(/\.0$/, "") + "초";
+}
+function renderLegend() {
+  $("lgGray").textContent = "잔컷 " + fmtSec(TH.gray) + "↓";
+  $("lgGreen").textContent = "~" + fmtSec(TH.green);
+  $("lgYellow").textContent = fmtSec(TH.green) + "~" + fmtSec(TH.yellow);
+  $("lgRed").textContent = fmtSec(TH.yellow) + "↑";
+}
+function applyTH() {
+  saveTH();
+  renderLegend();
+  lastMod = 0; // 다음 폴에서 강제 재렌더
+  lastDur = [];
+  poll();
+}
+function setupSettings() {
+  const panel = $("settings");
+  $("gearBtn").addEventListener("click", () => {
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  });
+  const tabS = $("tabSimple"), tabC = $("tabCustom");
+  const paneS = $("paneSimple"), paneC = $("paneCustom");
+  tabS.addEventListener("click", () => {
+    tabS.classList.add("active"); tabC.classList.remove("active");
+    paneS.style.display = "block"; paneC.style.display = "none";
+  });
+  tabC.addEventListener("click", () => {
+    tabC.classList.add("active"); tabS.classList.remove("active");
+    paneC.style.display = "block"; paneS.style.display = "none";
+    fillCustom();
+  });
+  // 간단: 슬라이더(목표) → green=목표, yellow=목표+1, gray 유지
+  const sl = $("tgtSlider");
+  sl.value = TH.green;
+  $("tgtVal").textContent = fmtSec(TH.green);
+  sl.addEventListener("input", () => {
+    const t = parseFloat(sl.value);
+    $("tgtVal").textContent = fmtSec(t);
+    TH.green = t; TH.yellow = t + 1;
+    applyTH();
+  });
+  // 직접: 각 경계 입력
+  fillCustom();
+  ["cGray", "cGreen", "cYellow"].forEach((id) =>
+    $(id).addEventListener("change", () => {
+      const g = parseFloat($("cGray").value);
+      const gr = parseFloat($("cGreen").value);
+      const y = parseFloat($("cYellow").value);
+      if (!(gr > 0) || !(y > gr)) return; // 유효성
+      TH.gray = g >= 0 ? g : 0;
+      TH.green = gr;
+      TH.yellow = y;
+      sl.value = Math.min(5, Math.max(1.5, gr));
+      $("tgtVal").textContent = fmtSec(gr);
+      applyTH();
+    })
+  );
+}
+function fillCustom() {
+  $("cGray").value = TH.gray;
+  $("cGreen").value = TH.green;
+  $("cYellow").value = TH.yellow;
 }
 
 async function gateCheck() {

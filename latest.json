@@ -1,11 +1,11 @@
 {
- "version": "0.2.3",
- "notes": "썸네일 로딩 속도 개선(동시 5개)",
- "pub_date": "2026-07-25T11:30:00Z",
+ "version": "0.3.0",
+ "notes": "목표 컷 길이 직접 설정(간단 슬라이더/직접 입력) + 잔컷(회색) 표시 추가",
+ "pub_date": "2026-07-25T12:00:00Z",
  "platforms": {
   "windows-x86_64": {
-   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM2taTmFTYTZQWTkrRGtZK3lielRnL1Q2ZytjY2d5VURsU1V4aTZSNGhoVmIzVlNHOURzT0dZcVd4YncwRE1TREdoeUV2dHcrY2hzZ3JRL1VCUU9malFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTc3ODUxCWZpbGU6Q3V0Q2hlY2tfMC4yLjNfeDY0LXNldHVwLmV4ZQpUL2ZRbHdHNDYyS0ZEK01ZTDJMQ1plMmU1eU1VUTJIT0N0emZCQzlWWW0rWUNjZ1RYYTNWamxueVZwMXdhK0d6Z2tzTlV0dmtXN2YzWHErREppaThDUT09Cg==",
-   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.2.3/CutCheck_0.2.3_x64-setup.exe"
+   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3Urd0p6eDVucjF5SUJPcWZhb2YyYlBIQzkwc0hGRmFxcmkwOWhXTjRJK29pZCsvamx4cU9SNTNVK2JnT1JDbHVjaVpGOXM4OG9OeXZjV2V0L3RQWHdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTc5MDE2CWZpbGU6Q3V0Q2hlY2tfMC4zLjBfeDY0LXNldHVwLmV4ZQpTelNMcmExc1h6VWNVWjk0VENOMGpqQ3ltdncwRitEVWlSL0VaNmwxdHhPRVFZTmozWTZlVUczVTE3WWR1cnZqRFFqUU9rRkRnUDhITE5RSlBxNE5BUT09Cg==",
+   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.3.0/CutCheck_0.3.0_x64-setup.exe"
   }
  }
 }
