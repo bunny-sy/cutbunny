@@ -159,11 +159,7 @@ async function poll() {
   }
 }
 
-// ---- 디하클 닉네임 게이트 + 사용 기록 ----
-const WHITELIST_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRuXVUWXO18F5LEvwBQ3ltKIRd-43PIa6LNOcWmy9i10yQJyH9NaUmi_CwEgd24Mb0la_B5YYIRJJpz/pub?output=csv";
-const LOG_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfk364EN10WbNalCiasXUe1t2fslghaZtmB-QxMIyks9OOBEQ/formResponse";
-const LOG_ENTRY = "entry.2041288337"; // 폼 닉네임 필드 id
-
+// ---- 디하클 닉네임 게이트 + 사용 기록 (주소는 러스트 내부에만 존재) ----
 const CHEERS = [
   "숙제하러 오셨네요 👀",
   "오늘도 컷 자르러 오셨군요, 멋져요 🐰",
@@ -184,25 +180,16 @@ function norm(s) {
 
 async function fetchWhitelist() {
   try {
-    const r = await fetch(WHITELIST_URL + "&t=" + Date.now());
-    let txt = await r.text();
-    txt = txt.replace(/^﻿/, ""); // 구글 CSV 첫 줄 BOM 제거
-    return new Set(
-      txt
-        .split(/\r?\n/)
-        .map((l) => norm(l.split(",")[0]))
-        .filter(Boolean)
-    );
+    const list = await invoke("wl_fetch"); // 주소는 러스트 내부에만 존재
+    return new Set(list.map((n) => norm(n)).filter(Boolean));
   } catch (_) {
     return null;
   }
 }
 
-function logUsage(nick) {
+function logUsage(nick, ver) {
   try {
-    const fd = new FormData();
-    fd.append(LOG_ENTRY, nick);
-    fetch(LOG_FORM_URL, { method: "POST", mode: "no-cors", body: fd });
+    invoke("log_use", { nick, ver: ver || "" }); // 기록 전송도 러스트가 처리
   } catch (_) {}
 }
 
@@ -210,9 +197,9 @@ async function startApp(nick) {
   $("gate").style.display = "none";
   $("app").style.display = "flex";
   $("cheer").textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
-  if (nick) logUsage(nick);
 
   const ver = await window.__TAURI__.app.getVersion();
+  if (nick) logUsage(nick, ver);
   $("ver").textContent = "v" + ver + " · " + (nick || "");
   const root = await invoke("get_root");
   if (!root) $("status").textContent = "⚠ 캡컷 폴더를 못 찾았어요 — 캡컷 설치 확인!";

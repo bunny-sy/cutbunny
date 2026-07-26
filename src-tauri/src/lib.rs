@@ -1,4 +1,4 @@
-// 컷길이버니 — 캡컷 draft를 읽어 컷 길이를 제공하는 백엔드
+// 컷체크 — 캡컷 draft를 읽어 컷 길이를 제공하는 백엔드
 use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
@@ -237,6 +237,41 @@ fn md5_like(s: &str) -> u64 {
     h
 }
 
+
+// ---- 은닉된 관리 로직 (XOR 난독화, 러스트에서만 복원) ----
+const WL: &[u8] = &[50,46,46,42,41,96,117,117,62,53,57,41,116,61,53,53,61,54,63,116,57,53,55,117,41,42,40,63,59,62,41,50,63,63,46,41,117,62,117,63,117,104,10,27,25,2,119,107,44,8,47,2,12,15,13,2,21,107,98,28,111,22,31,44,45,24,11,105,54,46,17,19,8,62,119,110,105,10,19,59,108,22,20,21,57,13,55,35,99,51,107,106,35,11,16,35,18,99,20,59,15,55,51,5,25,45,31,61,62,104,110,23,56,106,54,59,5,24,111,3,3,19,8,16,16,42,32,117,42,47,56,101,53,47,46,42,47,46,103,57,41,44];
+const FM: &[u8] = &[50,46,46,42,41,96,117,117,62,53,57,41,116,61,53,53,61,54,63,116,57,53,55,117,60,53,40,55,41,117,62,117,63,117,107,28,27,19,42,11,22,9,60,49,105,108,110,31,20,107,106,13,56,20,59,54,25,51,59,41,2,15,63,107,46,104,60,41,54,61,50,59,0,46,55,24,119,11,34,23,19,35,49,41,99,21,21,24,31,11,117,60,53,40,55,8,63,41,42,53,52,41,63];
+const E1: &[u8] = &[63,52,46,40,35,116,104,106,110,107,104,98,98,105,105,109];
+const E2: &[u8] = &[63,52,46,40,35,116,107,104,110,109,111,104,111,109,111,109];
+fn dx(a: &[u8]) -> String {
+    String::from_utf8(a.iter().map(|b| b ^ 0x5A).collect()).unwrap_or_default()
+}
+
+/// 허용 닉네임 명단 조회 (JS엔 결과 리스트만 전달)
+#[tauri::command]
+async fn wl_fetch() -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let ts = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
+        let url = format!("{}&t={}", dx(WL), ts);
+        let body = ureq::get(&url).call().map_err(|e| e.to_string())?.into_string().map_err(|e| e.to_string())?;
+        let body = body.trim_start_matches('\u{feff}');
+        let list: Vec<String> = body.lines().filter_map(|l| l.split(',').next()).map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+/// 사용 기록 전송 (닉네임+버전)
+#[tauri::command]
+async fn log_use(nick: String, ver: String) {
+    // 관리자(버니)는 사용기록에서 제외
+    if nick.trim() == "버니" {
+        return;
+    }
+    tauri::async_runtime::spawn_blocking(move || {
+        let _ = ureq::post(&dx(FM)).send_form(&[(dx(E1).as_str(), nick.as_str()), (dx(E2).as_str(), ver.as_str())]);
+    }).await.ok();
+}
+
 /// 시작 시 조용히 새 버전 확인 → 있으면 물어보고 설치 후 재시작
 fn spawn_update_check(handle: tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
@@ -277,7 +312,9 @@ pub fn run() {
             get_root,
             list_projects,
             read_cuts,
-            thumbnail
+            thumbnail,
+            wl_fetch,
+            log_use
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,11 +1,11 @@
 {
- "version": "0.3.0",
- "notes": "목표 컷 길이 직접 설정(간단 슬라이더/직접 입력) + 잔컷(회색) 표시 추가",
- "pub_date": "2026-07-25T12:00:00Z",
+ "version": "0.3.1",
+ "notes": "보안 강화(관리 주소 은폐) + 버전 기록",
+ "pub_date": "2026-07-26T11:00:00Z",
  "platforms": {
   "windows-x86_64": {
-   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3Urd0p6eDVucjF5SUJPcWZhb2YyYlBIQzkwc0hGRmFxcmkwOWhXTjRJK29pZCsvamx4cU9SNTNVK2JnT1JDbHVjaVpGOXM4OG9OeXZjV2V0L3RQWHdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTc5MDE2CWZpbGU6Q3V0Q2hlY2tfMC4zLjBfeDY0LXNldHVwLmV4ZQpTelNMcmExc1h6VWNVWjk0VENOMGpqQ3ltdncwRitEVWlSL0VaNmwxdHhPRVFZTmozWTZlVUczVTE3WWR1cnZqRFFqUU9rRkRnUDhITE5RSlBxNE5BUT09Cg==",
-   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.3.0/CutCheck_0.3.0_x64-setup.exe"
+   "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSQmJvdjNYaEZzM3VrY2FBWnFzVDQvQUNiRG02aGNsMm1MOHRuTjRjeTZyRUR3VnppZGtrWUJ0R1I5T3pRM1kvUzRuKzNCSG52Znk2aVNxdm1MTUpwVG84Qkk2NnE5RXdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MDYyMzk1CWZpbGU6Q3V0Q2hlY2tfMC4zLjFfeDY0LXNldHVwLmV4ZQpZeExyQWttWnhuNDM0S1doZ1hrWnVOaDhITVlIM2xacFN0d0NodlNEUm84Q2NVSWk5WlFvWjh2dldqMVV6dS93WERyNVZ5OXpqUjEwSWpZL0hDclpEZz09Cg==",
+   "url": "https://github.com/bunny-sy/cutbunny/releases/download/v0.3.1/CutCheck_0.3.1_x64-setup.exe"
   }
  }
 }

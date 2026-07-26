@@ -1,0 +1,202 @@
+<title>컷체크 — 네이버 카페 글</title>
+<style>
+  :root{
+    --coral:#E0653C; --coral-soft:#FDF0EA; --ink:#2B2320; --sub:#6E625C;
+    --muted:#9A8E88; --line:#EFE6E1; --page:#FFFDFC; --card:#FFFFFF;
+    --blue:#2F73D9; --green:#22A06B; --amber:#E0A400; --red:#E24B4A; --gray:#B0B0B6;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --ink:#F3EAE5; --sub:#C3B5AE; --muted:#9C8D86; --line:#3B2F2A;
+      --page:#1A1513; --card:#241D1A; --coral-soft:#3A2419; }
+  }
+  :root[data-theme="dark"]{ --ink:#F3EAE5; --sub:#C3B5AE; --muted:#9C8D86; --line:#3B2F2A;
+    --page:#1A1513; --card:#241D1A; --coral-soft:#3A2419; }
+  :root[data-theme="light"]{ --ink:#2B2320; --sub:#6E625C; --muted:#9A8E88; --line:#EFE6E1;
+    --page:#FFFDFC; --card:#FFFFFF; --coral-soft:#FDF0EA; }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--page); color:var(--ink);
+        font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+        line-height:1.85; }
+  .wrap{ max-width:640px; margin:0 auto; padding:26px 20px 50px; }
+
+  /* 안내 배너 (카페엔 안 올리는 부분) */
+  .howto{ background:#FFF8E6; border:1px dashed #E0A400; border-radius:12px;
+          padding:14px 16px; margin-bottom:26px; font-size:13.5px; color:#6B5300; }
+  .howto b{ color:#8A6A00; }
+  .howto ol{ margin:8px 0 0 18px; }
+  .howto li{ margin:3px 0; }
+  @media (prefers-color-scheme:dark){ .howto{ background:#3A3216; border-color:#8A6A00; color:#F0DFA8; } }
+  :root[data-theme="dark"] .howto{ background:#3A3216; border-color:#8A6A00; color:#F0DFA8; }
+
+  .label{ font-size:12px; color:var(--muted); letter-spacing:.06em;
+          margin:26px 0 8px; font-weight:700; }
+
+  /* 실제 카페 글 영역 */
+  .post{ background:var(--card); border:1px solid var(--line); border-radius:16px;
+         padding:26px 24px 30px; }
+
+  h1{ font-size:20px; font-weight:700; color:var(--coral); margin-bottom:4px;
+      text-wrap:balance; }
+  .greet{ color:var(--sub); font-size:15px; margin:18px 0 0; }
+  p{ font-size:15px; margin:14px 0; color:var(--ink); }
+  p.dim{ color:var(--sub); font-size:14px; }
+  .em{ color:var(--coral); font-weight:700; }
+
+  .divider{ height:1px; background:var(--line); margin:26px 0; border:0; }
+
+  h2{ font-size:16.5px; font-weight:700; margin:0 0 10px; display:flex;
+      align-items:center; gap:9px; }
+  h2 .n{ width:26px; height:26px; border-radius:50%; background:var(--coral);
+         color:#fff; font-size:14px; display:flex; align-items:center;
+         justify-content:center; flex:0 0 auto; }
+
+  .linkbox{ background:var(--coral-soft); border-radius:12px; padding:15px 16px;
+            margin:14px 0; }
+  .linkbox .t{ font-size:13px; color:var(--sub); margin-bottom:6px; }
+  .linkbox .u{ font-size:14px; font-weight:700; word-break:break-all; }
+  .linkbox .u a{ color:var(--blue); text-decoration:underline; }
+
+  .imgslot{ border:2px dashed var(--coral); border-radius:12px; padding:16px;
+            text-align:center; color:var(--coral); font-size:13.5px;
+            font-weight:700; margin:16px 0; background:var(--coral-soft); }
+  .imgslot span{ display:block; font-weight:400; color:var(--sub); font-size:12.5px;
+                 margin-top:4px; }
+
+  ul{ margin:12px 0 12px 4px; list-style:none; }
+  li{ font-size:14.5px; margin:7px 0; padding-left:16px; position:relative; color:var(--ink); }
+  li::before{ content:"·"; position:absolute; left:4px; color:var(--muted); }
+
+  .colors{ margin:14px 0; }
+  .colors div{ display:flex; align-items:center; gap:10px; font-size:14.5px;
+               margin:7px 0; }
+  .colors i{ width:13px; height:13px; border-radius:4px; flex:0 0 auto; }
+
+  .tipbox{ background:var(--coral-soft); border-radius:12px; padding:15px 16px;
+           font-size:14px; margin:20px 0 0; }
+  .tipbox b{ color:var(--coral); }
+  .end{ text-align:center; color:var(--sub); font-size:14px; margin-top:24px; }
+
+  .copybtn{ display:block; width:100%; margin-top:18px; padding:13px;
+            background:var(--coral); color:#fff; border:0; border-radius:12px;
+            font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .copybtn:hover{ filter:brightness(.95); }
+  .copybtn:active{ transform:scale(.99); }
+</style>
+
+<div class="wrap">
+
+  <div class="howto">
+    <b>📌 카페에 올리는 방법</b>
+    <ol>
+      <li>아래 <b>[제목]</b>을 카페 글 제목에 복사</li>
+      <li><b>[본문]</b> 영역을 드래그해 복사 → 카페 글에 붙여넣기</li>
+      <li>주황 점선 자리마다 <b>「카페용사진」 폴더</b>의 사진을 순서대로 넣기</li>
+    </ol>
+  </div>
+
+  <div class="label">제목</div>
+  <div class="post" style="padding:16px 20px;">
+    <h1 style="margin:0;">✂ 컷체크 배포 — 캡컷 컷 길이 실시간 확인 프로그램</h1>
+  </div>
+
+  <div class="label">본문 (여기부터 복사)</div>
+  <div class="post" id="body">
+
+    <p class="greet">안녕하세요, 버니입니다 🐰</p>
+
+    <p>캡컷으로 편집할 때<br>
+    <b>"이 컷 몇 초지?"</b> 매번 확인하기 번거로우셨죠?</p>
+
+    <p>컷을 자를 때마다 옆에서 길이를 바로 보여주는<br>
+    <span class="em">✂ 컷체크</span>를 만들었어요.</p>
+
+    <p class="dim">3초 컷 목표에 맞는지 색으로 알려줘서<br>
+    과제하실 때 훨씬 편하실 거예요!</p>
+
+    <div class="linkbox">
+      <div class="t">▼ 아래 주소를 누르면 설치파일이 바로 받아져요</div>
+      <div class="u"><a href="https://github.com/bunny-sy/cutbunny/releases/latest/download/CutCheck_0.3.0_x64-setup.exe">https://github.com/bunny-sy/cutbunny/releases/latest/download/CutCheck_0.3.0_x64-setup.exe</a></div>
+    </div>
+    <p class="dim">※ 한 번만 받으시면 돼요. 이후 새 버전은 앱이 알아서 업데이트해요!</p>
+
+    <hr class="divider">
+
+    <h2><span class="n">1</span>설치하기</h2>
+    <div class="imgslot">🖼 사진 ①<span>컷체크_1_설치.png</span></div>
+    <p>파일을 두 번 누르면 <b>파란 경고창</b>이 뜰 수 있어요.<br>
+    프로그램이 유명하지 않아서 뜨는 안내일 뿐이니 안심하세요!</p>
+    <ul>
+      <li><b>"추가 정보"</b> → <b>"실행"</b> 순서로 누르면 설치됩니다</li>
+      <li>백신이 막으면 <b>"허용"</b> 눌러주세요</li>
+    </ul>
+
+    <hr class="divider">
+
+    <h2><span class="n">2</span>처음 켰을 때</h2>
+    <div class="imgslot">🖼 사진 ②<span>컷체크_2_닉네임.png</span></div>
+    <p>닉네임 입력창이 뜨면<br>
+    <b>단톡방에서 쓰시는 닉네임</b>을 그대로 입력해주세요.</p>
+    <ul>
+      <li>한 번만 입력하면 다음부턴 안 물어봐요</li>
+      <li>"등록되지 않은 닉네임"이 뜨면 댓글 남겨주세요!</li>
+    </ul>
+
+    <hr class="divider">
+
+    <h2><span class="n">3</span>이렇게 사용해요</h2>
+    <div class="imgslot">🖼 사진 ③<span>컷체크_3_사용법.png</span></div>
+    <p>캡컷 옆에 띄워두시면<br>
+    컷을 자를 때마다 길이가 <b>실시간으로</b> 나와요.</p>
+    <div class="colors">
+      <div><i style="background:var(--green)"></i>초록 = 목표 안쪽 (좋아요!)</div>
+      <div><i style="background:var(--amber)"></i>노랑 = 살짝 길어요</div>
+      <div><i style="background:var(--red)"></i>빨강 = 너무 길어요 (더 자르기)</div>
+      <div><i style="background:var(--gray)"></i>회색 = 너무 짧은 잔컷</div>
+    </div>
+    <p class="dim">맨 위가 방금 자른 최신 컷이에요.</p>
+
+    <hr class="divider">
+
+    <h2><span class="n">4</span>내 목표에 맞게 바꾸기</h2>
+    <div class="imgslot">🖼 사진 ④<span>컷체크_4_설정.png</span></div>
+    <p>컷 목표가 3초가 아니시라면<br>
+    오른쪽 위 <b>톱니 버튼</b>을 눌러 바꾸실 수 있어요.</p>
+    <ul>
+      <li><b>[간단]</b> 슬라이더로 목표만 정하면 나머지 색은 자동</li>
+      <li><b>[직접]</b> 색마다 기준을 직접 넣고 싶을 때</li>
+      <li>한 번 정하면 계속 저장돼요</li>
+    </ul>
+
+    <div class="tipbox">
+      <b>💡 업데이트는 자동이에요!</b><br>
+      새 기능이 나오면 앱을 켤 때 "업데이트할까요?" 창이 떠요.<br>
+      한 번만 누르면 최신으로 바뀝니다.
+    </div>
+
+    <p class="end">궁금한 점은 댓글로 편하게 남겨주세요 🐰</p>
+  </div>
+
+  <button class="copybtn" id="copy">📋 본문 전체 복사하기</button>
+</div>
+
+<script>
+  document.getElementById('copy').addEventListener('click', async () => {
+    const el = document.getElementById('body');
+    const btn = document.getElementById('copy');
+    try {
+      const html = el.innerHTML;
+      const text = el.innerText;
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([text], {type:'text/plain'})
+      })]);
+      btn.textContent = '✅ 복사됐어요! 카페 글에 붙여넣기 하세요';
+    } catch (e) {
+      const r = document.createRange(); r.selectNode(el);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = '본문이 선택됐어요 — Ctrl+C 를 눌러주세요';
+    }
+    setTimeout(()=>{ btn.textContent='📋 본문 전체 복사하기'; }, 4000);
+  });
+</script>
