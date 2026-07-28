@@ -1,0 +1,64 @@
+name: release
+
+# v로 시작하는 태그를 push하면 맥+윈도 빌드 → 릴리즈(초안) 생성
+# (초안이라 자동업데이트/수강생에겐 안 보임. 확인 후 직접 publish)
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest      # Apple Silicon(arm64)
+            args: '--target aarch64-apple-darwin'
+          - platform: windows-latest
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      # 맥: 번들할 정적 ffmpeg(arm64) 다운로드
+      - name: Prepare macOS ffmpeg
+        if: matrix.platform == 'macos-latest'
+        run: |
+          curl -L -o src-tauri/bin/ffmpeg https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64
+          chmod +x src-tauri/bin/ffmpeg
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build & Release (draft)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'CutCheck ${{ github.ref_name }}'
+          releaseBody: '컷체크 업데이트 🐰 (맥/윈도)'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

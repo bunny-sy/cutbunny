@@ -3,33 +3,78 @@ use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 
-/// 캡컷 draft 루트 자동 탐색 (globalSetting → 문서 → AppData)
+/// 캡컷 draft 루트 자동 탐색 (globalSetting에서 사용자 지정 경로 우선 → 기본 경로)
+/// OS별 분기: Windows는 기존 로직, macOS는 ~/Movies/CapCut/User Data 구조
 fn draft_root() -> Option<PathBuf> {
-    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-        let cfg = PathBuf::from(&local).join("CapCut\\User Data\\Config\\globalSetting");
-        if let Ok(txt) = fs::read_to_string(&cfg) {
-            for line in txt.lines() {
-                if let Some(rest) = line.trim().strip_prefix("currentCustomDraftPath=") {
-                    let p = rest.trim().replace("\\\\", "\\");
-                    let pb = PathBuf::from(p);
-                    if pb.is_dir() {
-                        return Some(pb);
+    #[cfg(target_os = "windows")]
+    {
+        // 1) globalSetting에서 사용자가 바꾼 저장 경로 파싱
+        if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+            let cfg = PathBuf::from(&local).join("CapCut\\User Data\\Config\\globalSetting");
+            if let Ok(txt) = fs::read_to_string(&cfg) {
+                for line in txt.lines() {
+                    if let Some(rest) = line.trim().strip_prefix("currentCustomDraftPath=") {
+                        let p = rest.trim().replace("\\\\", "\\");
+                        let pb = PathBuf::from(p);
+                        if pb.is_dir() {
+                            return Some(pb);
+                        }
                     }
                 }
             }
         }
-    }
-    if let Some(up) = std::env::var_os("USERPROFILE") {
-        let pb =
-            PathBuf::from(&up).join("Documents\\CapCut\\User Data\\Projects\\com.lveditor.draft");
-        if pb.is_dir() {
-            return Some(pb);
+        // 2) 문서 폴더 기본 경로
+        if let Some(up) = std::env::var_os("USERPROFILE") {
+            let pb = PathBuf::from(&up)
+                .join("Documents\\CapCut\\User Data\\Projects\\com.lveditor.draft");
+            if pb.is_dir() {
+                return Some(pb);
+            }
+        }
+        // 3) AppData 기본 경로
+        if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+            let pb = PathBuf::from(&local).join("CapCut\\User Data\\Projects\\com.lveditor.draft");
+            if pb.is_dir() {
+                return Some(pb);
+            }
         }
     }
-    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-        let pb = PathBuf::from(&local).join("CapCut\\User Data\\Projects\\com.lveditor.draft");
-        if pb.is_dir() {
-            return Some(pb);
+    #[cfg(target_os = "macos")]
+    {
+        if let Some(home) = std::env::var_os("HOME") {
+            // 맥 캡컷 기본 구조: ~/Movies/CapCut/User Data
+            let base = PathBuf::from(&home)
+                .join("Movies")
+                .join("CapCut")
+                .join("User Data");
+            // 1) globalSetting에서 사용자 지정 저장 경로 파싱
+            let cfg = base.join("Config").join("globalSetting");
+            if let Ok(txt) = fs::read_to_string(&cfg) {
+                for line in txt.lines() {
+                    if let Some(rest) = line.trim().strip_prefix("currentCustomDraftPath=") {
+                        let pb = PathBuf::from(rest.trim());
+                        if pb.is_dir() {
+                            return Some(pb);
+                        }
+                    }
+                }
+            }
+            // 2) 기본 Projects 경로
+            let pb = base.join("Projects").join("com.lveditor.draft");
+            if pb.is_dir() {
+                return Some(pb);
+            }
+            // 3) 혹시 Movies 대신 다른 위치를 쓰는 경우 대비 (Application Support)
+            let alt = PathBuf::from(&home)
+                .join("Library")
+                .join("Application Support")
+                .join("CapCut")
+                .join("User Data")
+                .join("Projects")
+                .join("com.lveditor.draft");
+            if alt.is_dir() {
+                return Some(alt);
+            }
         }
     }
     None
@@ -166,8 +211,19 @@ fn make_thumb(app: &tauri::AppHandle, video: &str, src_sec: f64) -> Result<Strin
     if video.is_empty() || !std::path::Path::new(video).exists() {
         return Err("영상 없음".into());
     }
+    #[cfg(target_os = "windows")]
     let cache = std::env::var_os("LOCALAPPDATA")
-        .map(|l| PathBuf::from(l).join("CutBunny\\thumbs"))
+        .map(|l| PathBuf::from(l).join("CutBunny").join("thumbs"))
+        .ok_or("캐시 경로 없음")?;
+    #[cfg(target_os = "macos")]
+    let cache = std::env::var_os("HOME")
+        .map(|h| {
+            PathBuf::from(h)
+                .join("Library")
+                .join("Caches")
+                .join("CutBunny")
+                .join("thumbs")
+        })
         .ok_or("캐시 경로 없음")?;
     let _ = fs::create_dir_all(&cache);
     use base64::Engine;
@@ -180,24 +236,25 @@ fn make_thumb(app: &tauri::AppHandle, video: &str, src_sec: f64) -> Result<Strin
         return Ok(format!("data:image/jpeg;base64,{}", b));
     }
     let ff = ffmpeg_path(app)?;
-    let status = Command::new(&ff)
-        .args([
-            "-y",
-            "-v",
-            "error",
-            "-ss",
-            &format!("{:.2}", src_sec),
-            "-i",
-            video,
-            "-frames:v",
-            "1",
-            "-vf",
-            "scale=120:-1",
-            &out.to_string_lossy(),
-        ])
-        .creation_flags(0x08000000)
-        .status()
-        .map_err(|e| e.to_string())?;
+    let mut cmd = Command::new(&ff);
+    cmd.args([
+        "-y",
+        "-v",
+        "error",
+        "-ss",
+        &format!("{:.2}", src_sec),
+        "-i",
+        video,
+        "-frames:v",
+        "1",
+        "-vf",
+        "scale=120:-1",
+        &out.to_string_lossy(),
+    ]);
+    // 윈도우에서만 콘솔창 숨김 플래그 (CREATE_NO_WINDOW)
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(0x08000000);
+    let status = cmd.status().map_err(|e| e.to_string())?;
     if status.success() && out.exists() {
         // 새로 만든 jpg를 data URI로 반환 (asset 프로토콜 scope 문제 없이 확실히 표시)
         let bytes = fs::read(&out).map_err(|e| e.to_string())?;
@@ -208,19 +265,25 @@ fn make_thumb(app: &tauri::AppHandle, video: &str, src_sec: f64) -> Result<Strin
     }
 }
 
+#[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
 fn ffmpeg_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     use tauri::Manager;
-    // 번들된 리소스(bin/ffmpeg.exe) 우선
+    // OS별 ffmpeg 실행파일 이름
+    #[cfg(target_os = "windows")]
+    let name = "ffmpeg.exe";
+    #[cfg(not(target_os = "windows"))]
+    let name = "ffmpeg";
+    // 번들된 리소스(bin/ffmpeg) 우선
     if let Ok(res) = app.path().resource_dir() {
-        let p = res.join("bin").join("ffmpeg.exe");
+        let p = res.join("bin").join(name);
         if p.exists() {
             return Ok(p);
         }
     }
     // 개발 중 fallback
-    let dev = PathBuf::from("bin/ffmpeg.exe");
+    let dev = PathBuf::from("bin").join(name);
     if dev.exists() {
         return Ok(dev);
     }
