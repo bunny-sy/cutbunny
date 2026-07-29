@@ -100,6 +100,27 @@ select {
   outline: none;
 }
 
+/* 프로젝트를 못 찾았을 때 안내 + 직접 선택 */
+.noProj {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 11px; padding: 14px 12px; margin-bottom: 8px; text-align: center;
+}
+.npTitle { color: var(--pink); font-size: 13px; font-weight: 700; }
+.npDesc { color: var(--muted); font-size: 11px; line-height: 1.6; margin: 6px 0 10px; }
+.npBtn {
+  width: 100%; padding: 9px; font-size: 13px; font-weight: 700; font-family: inherit;
+  color: #fff; background: var(--pink); border: 0; border-radius: 9px; cursor: pointer;
+}
+.npBtn:hover { filter: brightness(0.95); }
+.npMsg { font-size: 11px; margin-top: 8px; min-height: 13px; color: #e24b4a; }
+.npMsg.ok { color: #22a06b; }
+.npDet { margin-top: 8px; text-align: left; }
+.npDet summary { font-size: 10px; color: var(--muted); cursor: pointer; }
+.npDet pre {
+  font-size: 9px; color: var(--muted); white-space: pre-wrap; word-break: break-all;
+  margin-top: 5px; max-height: 130px; overflow-y: auto; user-select: text;
+}
+
 .stats { display: flex; gap: 6px; margin-bottom: 8px; }
 .stat {
   flex: 1;

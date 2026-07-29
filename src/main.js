@@ -76,9 +76,48 @@ function fmt(s) {
   return s.toFixed(2) + "초";
 }
 
+// 프로젝트를 못 찾았을 때: 안내 + 폴더 직접 선택 UI 표시
+async function showNoProject() {
+  $("projSel").style.display = "none";
+  $("noProj").style.display = "block";
+  $("status").textContent = "캡컷 프로젝트를 찾는 중...";
+  try {
+    $("npDiag").textContent = await invoke("diag");
+  } catch (e) {
+    $("npDiag").textContent = String(e);
+  }
+}
+
+function hideNoProject() {
+  $("projSel").style.display = "";
+  $("noProj").style.display = "none";
+}
+
+async function pickFolder() {
+  const msg = $("npMsg");
+  try {
+    msg.className = "npMsg";
+    msg.textContent = "";
+    await invoke("pick_root"); // 선택창은 러스트가 띄움
+    msg.className = "npMsg ok";
+    msg.textContent = "✅ 찾았어요! 불러오는 중...";
+    followLatest = true;
+    lastMod = 0;
+    await refreshProjects();
+    await poll();
+  } catch (e) {
+    msg.className = "npMsg";
+    msg.textContent = "⚠ " + (e && e.message ? e.message : e);
+  }
+}
+
 async function refreshProjects() {
   const projs = await invoke("list_projects");
-  if (!projs.length) return;
+  if (!projs.length) {
+    await showNoProject();
+    return;
+  }
+  hideNoProject();
   const sel = $("projSel");
   const names = projs.map((p) => p.name);
   if (sel.dataset.names !== names.join("|")) {
@@ -201,8 +240,7 @@ async function startApp(nick) {
   const ver = await window.__TAURI__.app.getVersion();
   if (nick) logUsage(nick, ver);
   $("ver").textContent = "v" + ver + " · " + (nick || "");
-  const root = await invoke("get_root");
-  if (!root) $("status").textContent = "⚠ 캡컷 폴더를 못 찾았어요 — 캡컷 설치 확인!";
+  $("pickBtn").addEventListener("click", pickFolder);
 
   $("projSel").addEventListener("change", (e) => {
     curProject = e.target.value;

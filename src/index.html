@@ -44,6 +44,14 @@
 
       <select id="projSel"></select>
 
+      <div id="noProj" class="noProj" style="display:none">
+        <div class="npTitle">캡컷 프로젝트를 못 찾았어요</div>
+        <div class="npDesc">캡컷을 켜고 프로젝트를 한 번 저장해보세요.<br>그래도 안 뜨면 폴더를 직접 알려주세요!</div>
+        <button id="pickBtn" class="npBtn">📂 캡컷 폴더 직접 선택</button>
+        <div id="npMsg" class="npMsg"></div>
+        <details class="npDet"><summary>자세한 정보 (버니에게 보여주기)</summary><pre id="npDiag"></pre></details>
+      </div>
+
       <div class="stats">
         <div class="stat"><b id="stCuts">-</b><span>컷 수</span></div>
         <div class="stat"><b id="stTotal">-</b><span>총 길이</span></div>

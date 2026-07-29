@@ -5,7 +5,46 @@ use std::path::PathBuf;
 
 /// 캡컷 draft 루트 자동 탐색 (globalSetting에서 사용자 지정 경로 우선 → 기본 경로)
 /// OS별 분기: Windows는 기존 로직, macOS는 ~/Movies/CapCut/User Data 구조
+/// 프로젝트 폴더 안의 편집내용 파일 (윈도=draft_content, 맥 일부 버전=draft_info)
+const DRAFT_FILES: [&str; 2] = ["draft_content.json", "draft_info.json"];
+
+/// 프로젝트 폴더에서 실제 존재하는 편집내용 파일 경로
+fn draft_file(dir: &std::path::Path) -> Option<PathBuf> {
+    DRAFT_FILES
+        .iter()
+        .map(|n| dir.join(n))
+        .find(|p| p.is_file())
+}
+
+/// 사용자가 직접 고른 폴더를 기억해두는 파일
+fn saved_root_file() -> Option<PathBuf> {
+    #[cfg(target_os = "windows")]
+    let base = std::env::var_os("APPDATA").map(PathBuf::from);
+    #[cfg(target_os = "macos")]
+    let base = std::env::var_os("HOME")
+        .map(|h| PathBuf::from(h).join("Library").join("Application Support"));
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    let base = std::env::var_os("HOME").map(PathBuf::from);
+    base.map(|b| b.join("CutBunny").join("root.txt"))
+}
+
+/// 사용자가 직접 지정한 캡컷 폴더 (있으면 최우선)
+fn saved_root() -> Option<PathBuf> {
+    let f = saved_root_file()?;
+    let txt = fs::read_to_string(f).ok()?;
+    let pb = PathBuf::from(txt.trim());
+    if pb.is_dir() {
+        Some(pb)
+    } else {
+        None
+    }
+}
+
 fn draft_root() -> Option<PathBuf> {
+    // 0) 사용자가 직접 고른 폴더가 최우선
+    if let Some(p) = saved_root() {
+        return Some(p);
+    }
     #[cfg(target_os = "windows")]
     {
         // 1) globalSetting에서 사용자가 바꾼 저장 경로 파싱
@@ -59,25 +98,167 @@ fn draft_root() -> Option<PathBuf> {
                     }
                 }
             }
-            // 2) 기본 Projects 경로
-            let pb = base.join("Projects").join("com.lveditor.draft");
-            if pb.is_dir() {
-                return Some(pb);
-            }
-            // 3) 혹시 Movies 대신 다른 위치를 쓰는 경우 대비 (Application Support)
-            let alt = PathBuf::from(&home)
-                .join("Library")
-                .join("Application Support")
-                .join("CapCut")
-                .join("User Data")
-                .join("Projects")
-                .join("com.lveditor.draft");
-            if alt.is_dir() {
-                return Some(alt);
+            // 2) 여러 후보 위치를 순서대로 확인
+            //    (앱스토어판은 샌드박스 컨테이너 안에 들어있음)
+            let home = PathBuf::from(&home);
+            let bases = [
+                home.join("Movies").join("CapCut"),
+                home.join("Library")
+                    .join("Containers")
+                    .join("com.lemon.lvoverseas")
+                    .join("Data")
+                    .join("Movies")
+                    .join("CapCut"),
+                home.join("Library")
+                    .join("Containers")
+                    .join("com.bytedance.capcut")
+                    .join("Data")
+                    .join("Movies")
+                    .join("CapCut"),
+                home.join("Library").join("Application Support").join("CapCut"),
+                home.join("Movies").join("JianyingPro"),
+            ];
+            for b in bases.iter() {
+                let pb = b
+                    .join("User Data")
+                    .join("Projects")
+                    .join("com.lveditor.draft");
+                if pb.is_dir() {
+                    return Some(pb);
+                }
             }
         }
     }
     None
+}
+
+/// 폴더 안에 캡컷 프로젝트(편집내용 파일)가 하나라도 있는지
+fn has_projects(dir: &std::path::Path) -> bool {
+    fs::read_dir(dir)
+        .map(|rd| rd.flatten().any(|e| draft_file(&e.path()).is_some()))
+        .unwrap_or(false)
+}
+
+/// 폴더 선택창을 띄우고, 고른 폴더를 저장 (선택창은 러스트에서 처리)
+#[tauri::command]
+async fn pick_root(app: tauri::AppHandle) -> Result<String, String> {
+    use tauri_plugin_dialog::DialogExt;
+    let (tx, rx) = std::sync::mpsc::channel();
+    app.dialog()
+        .file()
+        .set_title("캡컷 프로젝트 폴더를 골라주세요")
+        .pick_folder(move |p| {
+            let _ = tx.send(p);
+        });
+    let picked = tauri::async_runtime::spawn_blocking(move || rx.recv().ok().flatten())
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("취소했어요")?;
+    let path = picked
+        .into_path()
+        .map_err(|e| e.to_string())?
+        .to_string_lossy()
+        .to_string();
+    save_root(path)
+}
+
+/// 고른 폴더를 저장. 상위 폴더를 골라도 알아서 찾아 들어감.
+fn save_root(path: String) -> Result<String, String> {
+    let picked = PathBuf::from(&path);
+    if !picked.is_dir() {
+        return Err("폴더가 아니에요".into());
+    }
+    // 고른 폴더 자체 → 하위의 흔한 경로들 순으로 프로젝트가 있는 곳 탐색
+    let mut cands = vec![picked.clone()];
+    cands.push(picked.join("com.lveditor.draft"));
+    cands.push(picked.join("Projects").join("com.lveditor.draft"));
+    cands.push(
+        picked
+            .join("User Data")
+            .join("Projects")
+            .join("com.lveditor.draft"),
+    );
+    cands.push(
+        picked
+            .join("CapCut")
+            .join("User Data")
+            .join("Projects")
+            .join("com.lveditor.draft"),
+    );
+    let found = cands
+        .into_iter()
+        .find(|p| p.is_dir() && has_projects(p))
+        .ok_or("그 폴더 안에서 캡컷 프로젝트를 찾지 못했어요")?;
+
+    let f = saved_root_file().ok_or("저장 위치를 못 찾았어요")?;
+    if let Some(parent) = f.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    fs::write(&f, found.to_string_lossy().as_bytes()).map_err(|e| e.to_string())?;
+    Ok(found.to_string_lossy().to_string())
+}
+
+/// 왜 못 찾는지 진단 리포트 (문제 생겼을 때 화면에 보여줌)
+#[tauri::command]
+fn diag() -> String {
+    let mut s = String::new();
+    match draft_root() {
+        Some(r) => {
+            s.push_str(&format!("찾은 폴더: {}\n", r.display()));
+            match fs::read_dir(&r) {
+                Ok(rd) => {
+                    let items: Vec<_> = rd.flatten().collect();
+                    s.push_str(&format!("폴더 안 항목 수: {}\n", items.len()));
+                    let ok = items
+                        .iter()
+                        .filter(|e| draft_file(&e.path()).is_some())
+                        .count();
+                    s.push_str(&format!("프로젝트로 인식된 수: {}\n", ok));
+                    for e in items.iter().take(5) {
+                        let p = e.path();
+                        let names: Vec<String> = fs::read_dir(&p)
+                            .map(|r| {
+                                r.flatten()
+                                    .map(|x| x.file_name().to_string_lossy().to_string())
+                                    .filter(|n| n.ends_with(".json"))
+                                    .take(4)
+                                    .collect()
+                            })
+                            .unwrap_or_default();
+                        s.push_str(&format!(
+                            "  · {} → {}\n",
+                            e.file_name().to_string_lossy(),
+                            if names.is_empty() {
+                                "(json 없음/읽기 실패)".to_string()
+                            } else {
+                                names.join(", ")
+                            }
+                        ));
+                    }
+                }
+                Err(e) => s.push_str(&format!("⚠ 폴더를 열 수 없어요: {}\n", e)),
+            }
+        }
+        None => {
+            s.push_str("캡컷 폴더를 자동으로 찾지 못했어요.\n");
+            #[cfg(target_os = "macos")]
+            if let Some(home) = std::env::var_os("HOME") {
+                let h = PathBuf::from(home);
+                for c in [
+                    h.join("Movies"),
+                    h.join("Movies").join("CapCut"),
+                    h.join("Movies").join("CapCut").join("User Data"),
+                ] {
+                    s.push_str(&format!(
+                        "  {} → {}\n",
+                        c.display(),
+                        if c.is_dir() { "있음" } else { "없음/접근불가" }
+                    ));
+                }
+            }
+        }
+    }
+    s
 }
 
 #[tauri::command]
@@ -97,7 +278,9 @@ fn list_projects() -> Vec<Proj> {
     if let Some(root) = draft_root() {
         if let Ok(rd) = fs::read_dir(&root) {
             for e in rd.flatten() {
-                let dc = e.path().join("draft_content.json");
+                let Some(dc) = draft_file(&e.path()) else {
+                    continue;
+                };
                 if let Ok(meta) = fs::metadata(&dc) {
                     let mtime = meta
                         .modified()
@@ -134,7 +317,7 @@ struct CutsResult {
 #[tauri::command]
 fn read_cuts(project: String) -> Result<CutsResult, String> {
     let root = draft_root().ok_or("캡컷 폴더를 찾지 못했어요")?;
-    let path = root.join(&project).join("draft_content.json");
+    let path = draft_file(&root.join(&project)).ok_or("프로젝트 파일을 찾지 못했어요")?;
     let mtime = fs::metadata(&path)
         .ok()
         .and_then(|m| m.modified().ok())
@@ -377,7 +560,9 @@ pub fn run() {
             read_cuts,
             thumbnail,
             wl_fetch,
-            log_use
+            log_use,
+            pick_root,
+            diag
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
