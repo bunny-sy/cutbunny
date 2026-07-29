@@ -16,8 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest      # Apple Silicon(arm64)
-            args: '--target aarch64-apple-darwin'
+          - platform: macos-latest      # 인텔 + 애플실리콘 겸용(유니버설)
+            args: '--target universal-apple-darwin'
           - platform: windows-latest
             args: ''
     runs-on: ${{ matrix.platform }}
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Cache Rust
         uses: swatinem/rust-cache@v2
@@ -43,11 +43,15 @@ jobs:
       - name: Prepare macOS ffmpeg
         if: matrix.platform == 'macos-latest'
         run: |
-          curl -L -o src-tauri/bin/ffmpeg https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64
+          BASE=https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1
+          curl -L -o /tmp/ffmpeg-arm64 $BASE/ffmpeg-darwin-arm64
+          curl -L -o /tmp/ffmpeg-x64   $BASE/ffmpeg-darwin-x64
+          # 인텔+애플실리콘 합쳐 하나로 (유니버설). 안 합치면 인텔에서 썸네일이 안 나옴
+          lipo -create -output src-tauri/bin/ffmpeg /tmp/ffmpeg-arm64 /tmp/ffmpeg-x64
           chmod +x src-tauri/bin/ffmpeg
-          # M칩은 서명 없는 실행파일을 거부 → 번들 전에 임시 서명 (안 하면 앱이 "손상됨")
+          # 맥은 서명 없는 실행파일을 거부 → 번들 전에 임시 서명 (안 하면 앱이 "손상됨")
           codesign --force --sign - --timestamp=none src-tauri/bin/ffmpeg
-          codesign -dv src-tauri/bin/ffmpeg 2>&1 | head -3
+          lipo -info src-tauri/bin/ffmpeg
 
       - name: Install dependencies
         run: npm install
