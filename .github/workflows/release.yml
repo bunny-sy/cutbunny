@@ -45,6 +45,9 @@ jobs:
         run: |
           curl -L -o src-tauri/bin/ffmpeg https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64
           chmod +x src-tauri/bin/ffmpeg
+          # M칩은 서명 없는 실행파일을 거부 → 번들 전에 임시 서명 (안 하면 앱이 "손상됨")
+          codesign --force --sign - --timestamp=none src-tauri/bin/ffmpeg
+          codesign -dv src-tauri/bin/ffmpeg 2>&1 | head -3
 
       - name: Install dependencies
         run: npm install
@@ -53,6 +56,8 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 맥: 임시(ad-hoc) 서명 — 애플 유료 인증 없이 "손상됨" 대신 "확인 안 된 개발자"로
+          APPLE_SIGNING_IDENTITY: ${{ matrix.platform == 'macos-latest' && '-' || '' }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
