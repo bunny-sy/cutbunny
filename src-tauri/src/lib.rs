@@ -40,10 +40,20 @@ fn saved_root() -> Option<PathBuf> {
     }
 }
 
-fn draft_root() -> Option<PathBuf> {
+/// 폴더가 실제로 있고 아직 안 담겼으면 추가 (중복 제거)
+fn add_root(out: &mut Vec<PathBuf>, p: PathBuf) {
+    if p.is_dir() && !out.iter().any(|q| *q == p) {
+        out.push(p);
+    }
+}
+
+/// 캡컷 프로젝트가 들어있을 수 있는 폴더를 **전부** 모음.
+/// (캡컷은 문서/AppData 두 곳을 같이 쓰기도 해서, 한 곳만 보면 프로젝트가 누락됨)
+fn draft_roots() -> Vec<PathBuf> {
+    let mut out: Vec<PathBuf> = Vec::new();
     // 0) 사용자가 직접 고른 폴더가 최우선
     if let Some(p) = saved_root() {
-        return Some(p);
+        add_root(&mut out, p);
     }
     #[cfg(target_os = "windows")]
     {
@@ -54,28 +64,24 @@ fn draft_root() -> Option<PathBuf> {
                 for line in txt.lines() {
                     if let Some(rest) = line.trim().strip_prefix("currentCustomDraftPath=") {
                         let p = rest.trim().replace("\\\\", "\\");
-                        let pb = PathBuf::from(p);
-                        if pb.is_dir() {
-                            return Some(pb);
-                        }
+                        add_root(&mut out, PathBuf::from(p));
                     }
                 }
             }
         }
         // 2) 문서 폴더 기본 경로
         if let Some(up) = std::env::var_os("USERPROFILE") {
-            let pb = PathBuf::from(&up)
-                .join("Documents\\CapCut\\User Data\\Projects\\com.lveditor.draft");
-            if pb.is_dir() {
-                return Some(pb);
-            }
+            add_root(
+                &mut out,
+                PathBuf::from(&up).join("Documents\\CapCut\\User Data\\Projects\\com.lveditor.draft"),
+            );
         }
         // 3) AppData 기본 경로
         if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-            let pb = PathBuf::from(&local).join("CapCut\\User Data\\Projects\\com.lveditor.draft");
-            if pb.is_dir() {
-                return Some(pb);
-            }
+            add_root(
+                &mut out,
+                PathBuf::from(&local).join("CapCut\\User Data\\Projects\\com.lveditor.draft"),
+            );
         }
     }
     #[cfg(target_os = "macos")]
@@ -91,10 +97,7 @@ fn draft_root() -> Option<PathBuf> {
             if let Ok(txt) = fs::read_to_string(&cfg) {
                 for line in txt.lines() {
                     if let Some(rest) = line.trim().strip_prefix("currentCustomDraftPath=") {
-                        let pb = PathBuf::from(rest.trim());
-                        if pb.is_dir() {
-                            return Some(pb);
-                        }
+                        add_root(&mut out, PathBuf::from(rest.trim()));
                     }
                 }
             }
@@ -119,14 +122,32 @@ fn draft_root() -> Option<PathBuf> {
                 home.join("Movies").join("JianyingPro"),
             ];
             for b in bases.iter() {
-                let pb = b
-                    .join("User Data")
-                    .join("Projects")
-                    .join("com.lveditor.draft");
-                if pb.is_dir() {
-                    return Some(pb);
-                }
+                add_root(
+                    &mut out,
+                    b.join("User Data").join("Projects").join("com.lveditor.draft"),
+                );
             }
+        }
+    }
+    out
+}
+
+/// 대표 폴더 1개 (설정 화면 표시·진단용)
+fn draft_root() -> Option<PathBuf> {
+    draft_roots().into_iter().next()
+}
+
+/// 목록에서 고른 프로젝트를 실제 폴더 경로로 변환.
+/// 프론트가 전체 경로를 넘기지만, 예전 방식(이름만)도 계속 지원.
+fn resolve_project(project: &str) -> Option<PathBuf> {
+    let p = PathBuf::from(project);
+    if p.is_dir() && draft_file(&p).is_some() {
+        return Some(p);
+    }
+    for r in draft_roots() {
+        let q = r.join(project);
+        if q.is_dir() && draft_file(&q).is_some() {
+            return Some(q);
         }
     }
     None
@@ -202,6 +223,15 @@ fn save_root(path: String) -> Result<String, String> {
 #[tauri::command]
 fn diag() -> String {
     let mut s = String::new();
+    let roots = draft_roots();
+    s.push_str(&format!("찾은 폴더 {}곳:\n", roots.len()));
+    for r in &roots {
+        let n = fs::read_dir(r)
+            .map(|rd| rd.flatten().filter(|e| draft_file(&e.path()).is_some()).count())
+            .unwrap_or(0);
+        s.push_str(&format!("  · {} (프로젝트 {}개)\n", r.display(), n));
+    }
+    s.push('\n');
     match draft_root() {
         Some(r) => {
             s.push_str(&format!("찾은 폴더: {}\n", r.display()));
@@ -270,30 +300,35 @@ fn get_root() -> Option<String> {
 struct Proj {
     name: String,
     mtime: u64,
+    path: String,
 }
 
 #[tauri::command]
 fn list_projects() -> Vec<Proj> {
-    let mut out = Vec::new();
-    if let Some(root) = draft_root() {
-        if let Ok(rd) = fs::read_dir(&root) {
-            for e in rd.flatten() {
-                let Some(dc) = draft_file(&e.path()) else {
-                    continue;
-                };
-                if let Ok(meta) = fs::metadata(&dc) {
-                    let mtime = meta
-                        .modified()
-                        .ok()
-                        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                        .map(|d| d.as_millis() as u64)
-                        .unwrap_or(0);
-                    out.push(Proj {
-                        name: e.file_name().to_string_lossy().to_string(),
-                        mtime,
-                    });
-                }
+    let mut out: Vec<Proj> = Vec::new();
+    // 후보 폴더를 전부 훑어서 합침 (한 곳만 보면 프로젝트가 누락됨)
+    for root in draft_roots() {
+        let Ok(rd) = fs::read_dir(&root) else { continue };
+        for e in rd.flatten() {
+            let dir = e.path();
+            let Some(dc) = draft_file(&dir) else { continue };
+            let Ok(meta) = fs::metadata(&dc) else { continue };
+            let mtime = meta
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_millis() as u64)
+                .unwrap_or(0);
+            let path = dir.to_string_lossy().to_string();
+            // 같은 폴더가 두 경로로 잡혀도 한 번만
+            if out.iter().any(|p| p.path == path) {
+                continue;
             }
+            out.push(Proj {
+                name: e.file_name().to_string_lossy().to_string(),
+                mtime,
+                path,
+            });
         }
     }
     out.sort_by(|a, b| b.mtime.cmp(&a.mtime));
@@ -316,8 +351,8 @@ struct CutsResult {
 
 #[tauri::command]
 fn read_cuts(project: String) -> Result<CutsResult, String> {
-    let root = draft_root().ok_or("캡컷 폴더를 찾지 못했어요")?;
-    let path = draft_file(&root.join(&project)).ok_or("프로젝트 파일을 찾지 못했어요")?;
+    let folder = resolve_project(&project).ok_or("프로젝트를 찾지 못했어요")?;
+    let path = draft_file(&folder).ok_or("프로젝트 파일을 찾지 못했어요")?;
     let mtime = fs::metadata(&path)
         .ok()
         .and_then(|m| m.modified().ok())
@@ -328,7 +363,6 @@ fn read_cuts(project: String) -> Result<CutsResult, String> {
     let v: serde_json::Value = serde_json::from_str(&txt).map_err(|e| e.to_string())?;
     let empty = Vec::new();
     // 영상 소재 id → 경로 매핑 (##_draftpath_placeholder_..._## 치환)
-    let folder = root.join(&project);
     let folder_fwd = folder.to_string_lossy().replace('\\', "/");
     let re = regex_lite(&folder_fwd);
     let mut vids = std::collections::HashMap::new();

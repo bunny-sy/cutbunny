@@ -139,14 +139,17 @@ async function refreshProjects() {
   }
   hideNoProject();
   const sel = $("projSel");
-  const names = projs.map((p) => p.name);
-  if (sel.dataset.names !== names.join("|")) {
-    sel.innerHTML = names
-      .map((n) => `<option value="${n.replace(/"/g, "&quot;")}">${n}</option>`)
+  // 값=폴더 전체경로(여러 폴더에 같은 이름이 있어도 구분됨), 표시=프로젝트 이름
+  const esc = (t) =>
+    String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const key = projs.map((p) => p.path).join("|");
+  if (sel.dataset.names !== key) {
+    sel.innerHTML = projs
+      .map((p) => `<option value="${esc(p.path)}">${esc(p.name)}</option>`)
       .join("");
-    sel.dataset.names = names.join("|");
+    sel.dataset.names = key;
   }
-  if (followLatest) curProject = projs[0].name;
+  if (followLatest) curProject = projs[0].path;
   sel.value = curProject;
 }
 
