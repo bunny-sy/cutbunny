@@ -93,21 +93,41 @@ function hideNoProject() {
   $("noProj").style.display = "none";
 }
 
-async function pickFolder() {
-  const msg = $("npMsg");
+// 안내창·설정 양쪽 메시지를 함께 갱신
+function setPickMsg(text, ok) {
+  ["npMsg", "pickMsg2"].forEach((id) => {
+    const el = $(id);
+    if (el) {
+      el.className = ok ? "npMsg ok" : "npMsg";
+      el.textContent = text;
+    }
+  });
+}
+
+// 지금 보고 있는 캡컷 폴더 경로를 설정에 표시
+async function showCurRoot() {
+  const el = $("curRoot");
+  if (!el) return;
   try {
-    msg.className = "npMsg";
-    msg.textContent = "";
+    const root = await invoke("get_root");
+    el.textContent = root ? "지금 폴더: " + root : "지금 폴더: 못 찾음";
+  } catch (_) {}
+}
+
+async function pickFolder() {
+  try {
+    setPickMsg("", false);
     await invoke("pick_root"); // 선택창은 러스트가 띄움
-    msg.className = "npMsg ok";
-    msg.textContent = "✅ 찾았어요! 불러오는 중...";
+    setPickMsg("✅ 찾았어요! 불러오는 중...", true);
     followLatest = true;
+    curProject = null;
     lastMod = 0;
+    lastDur = [];
     await refreshProjects();
     await poll();
+    await showCurRoot();
   } catch (e) {
-    msg.className = "npMsg";
-    msg.textContent = "⚠ " + (e && e.message ? e.message : e);
+    setPickMsg("⚠ " + (e && e.message ? e.message : e), false);
   }
 }
 
@@ -241,6 +261,8 @@ async function startApp(nick) {
   if (nick) logUsage(nick, ver);
   $("ver").textContent = "v" + ver + " · " + (nick || "");
   $("pickBtn").addEventListener("click", pickFolder);
+  $("pickBtn2").addEventListener("click", pickFolder);
+  showCurRoot();
 
   $("projSel").addEventListener("change", (e) => {
     curProject = e.target.value;

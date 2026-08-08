@@ -100,6 +100,14 @@ select {
   outline: none;
 }
 
+/* ⚙ 설정 안: 캡컷 폴더 바꾸기 (항상 이용 가능) */
+.folderBox { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
+.fbTitle { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+.fbPath {
+  font-size: 9px; color: var(--start); margin-top: 6px;
+  word-break: break-all; user-select: text; line-height: 1.4;
+}
+
 /* 프로젝트를 못 찾았을 때 안내 + 직접 선택 */
 .noProj {
   background: var(--card); border: 1px solid var(--border);
